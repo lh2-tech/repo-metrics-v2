@@ -1,0 +1,58 @@
+# Simplifies "Option A — Docker" from README.md: one `docker compose build`
+# instead of the long `docker build -f ... -t ...` command, and one
+# `docker compose run` instead of retyping the three bind mounts every run.
+#
+# Build context is this file's own directory (the DataLabs root) — required,
+# because skills/repo-metrics/docker/Dockerfile COPYs datalabs_paths.py and
+# skills/repo-metrics/scripts/ from here. Keep this file at the package root,
+# not inside docker/.
+#
+# Before first run:
+#   - drop repos.txt next to this file (one repo per line — owner/repo, a
+#     full URL, or a local path; see skills/repo-metrics/docker/README.md)
+#   - `touch .env` if you have no tokens to add. Compose errors if an
+#     env_file: target doesn't exist at all, even for public-repo runs where
+#     no token is needed — an empty file satisfies it.
+#     Otherwise put GH_TOKEN / GITLAB_TOKEN / BITBUCKET_TOKEN / etc. in it —
+#     same file plain Python (Option B) and raw `docker run` already use.
+#
+# Usage:
+#   docker compose build
+#   docker compose run --rm repo-metrics --repos /data/repos.txt --out run1 --pct 5
+#
+# Everything after the service name is passed straight to
+# run_metrics_and_sample.py, exactly like Option B's CLI — --full-clone,
+# --skip-sampling, --min-commits, --aggressive, etc. all work unchanged.
+#
+# `docker compose up` alone (no args) runs the image's default CMD
+# (`--help`) — a quick way to confirm the build worked.
+
+services:
+  repo-metrics:
+    build:
+      context: .
+      dockerfile: skills/repo-metrics/docker/Dockerfile
+    image: repo-metrics-sample
+    env_file:
+      - .env
+    volumes:
+      - ./repos.txt:/data/repos.txt:ro
+      - ./run-output:/app/outputs/repo-metrics
+      # Every local repo checkout lives as a sibling folder of datalabs_paths.py
+      # (this package's root) — mount that whole root read-only, then reference
+      # each repo in repos.txt by its bare folder name (e.g. "mim-hr"), exactly
+      # like Option B (plain Python). This image's WORKDIR is /data/checkouts,
+      # so a bare relative entry resolves there automatically — do NOT prefix
+      # it with /data/checkouts/, since that path only exists inside the
+      # container and would break the same repos.txt when run un-containerized:
+      - .:/data/checkouts:ro
+      #
+      # Optional — persist the clone cache across runs instead of cloning
+      # fresh every time. Target must be /app/clones (where the scripts look
+      # by default inside this image) — NOT /data/checkouts/clones, which is
+      # nested under the read-only checkouts mount above and is never read:
+      # - ./clones-cache:/app/clones
+      #
+      # Optional — enable real `--build-check docker` (actual build/test
+      # attempts, not static detection); needs the host's docker socket:
+      # - /var/run/docker.sock:/var/run/docker.sock

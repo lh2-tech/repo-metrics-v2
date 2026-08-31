@@ -1,0 +1,19 @@
+# Keep the repo-metrics image build context small and secret-free.
+.env
+.env.*
+*.pem
+*.key
+clones/
+outputs/
+.tools/
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+node_modules/
+.git/
+*.bak
+*.pre-migration.bak
+*.pre-normalize.bak
+.secrets-archive/
