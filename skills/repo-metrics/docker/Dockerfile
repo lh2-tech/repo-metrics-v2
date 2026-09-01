@@ -58,6 +58,13 @@ fi
 rm -rf /var/lib/apt/lists/*
 EOF
 
+# Bind-mounted checkouts (repos.txt local paths, /data/checkouts) keep the
+# host's UID, which differs from this image's root user. Git >= 2.35.2
+# refuses to run on a repo it doesn't own ("dubious ownership") unless the
+# path is explicitly trusted. Every repo under these mounts is the caller's
+# own, read-only, so trust all of them rather than one directory at a time.
+RUN git config --system --add safe.directory '*'
+
 RUN npm install -g jscpd@5
 
 # scc — the one hard, non-fallback-able requirement. TARGETARCH is set
