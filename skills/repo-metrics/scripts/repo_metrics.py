@@ -396,13 +396,13 @@ def ensure_clone(spec: RepoSpec, clones_dir: Path, tokens: Dict[str, str],
             shutil.rmtree(dest, ignore_errors=True)
             return None, f"clone from bare mirror failed: {result.tail(300)}"
 
-        if allow_non_git:
-            # Zip-derived source exports carry no history. LOC, duplication and
-            # build detection still work; commit metrics are reported as blank
-            # rather than zero, so absence is never mistaken for a real count.
-            return spec.local_path, "non-git source tree"
-
-        return None, "not a git repository"
+        # No .git and not a bare mirror: a plain folder or zip-derived source
+        # export with no history. LOC, duplication and build detection all
+        # still work straight off the files; commit metrics are reported as
+        # blank rather than zero, so absence is never mistaken for a real
+        # count. `allow_non_git` is accepted for backward compatibility but
+        # no longer gates this -- metrics are always collected.
+        return spec.local_path, "non-git source tree"
 
     dest = clones_dir / spec.platform / spec.name
     if (dest / ".git").exists():
@@ -1105,7 +1105,7 @@ def collect_build_test(repo: Path, mode: str, timeout: int,
 # ── per-repo driver ──────────────────────────────────────────────────────────
 
 CSV_COLUMNS = [
-    "repo", "platform", "source", "source_kind", "analysis_branch", "default_branch",
+    "repo", "platform", "source", "source_kind", ".git", "analysis_branch", "default_branch",
     "logical_loc", "non_authored_loc", "non_authored_pct", "authored_loc",
     "vendored_loc", "generated_minified_loc",
     "code_loc", "data_loc", "code_loc_pct", "primary_code_language", "top_data_languages",
@@ -1146,6 +1146,7 @@ def process_repo(spec: RepoSpec, cfg: argparse.Namespace, scc_bin: str,
         cloned_fresh = note == "cloned"
         has_git = note != "non-git source tree"
         row["source_kind"] = "git" if has_git else "source-export"
+        row[".git"] = "yes" if has_git else "no"
 
         branch = ""
         if has_git:
@@ -1278,8 +1279,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--no-gitignore", action="store_true",
                         help="let the duplication scan see gitignored files (scc never does)")
     parser.add_argument("--allow-non-git", action="store_true",
-                        help="measure source trees with no git history; commit "
-                             "metrics are left blank rather than reported as zero")
+                        help="deprecated, no-op: source trees with no git history are "
+                             "always measured now, with commit metrics left blank "
+                             "rather than reported as zero")
     parser.add_argument("--full-clone", action="store_true",
                         help="disable --filter=blob:none partial clones")
     parser.add_argument("--delete-clones", action="store_true",
