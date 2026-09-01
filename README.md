@@ -34,7 +34,7 @@ per run.
 
 ```bash
 cd repo_metrics_docker_package
-touch .env               # tokens optional for public repos; file just needs to exist
+cp .env.example .env     # regular runs: leave it as-is, see Tokens below for private repos
 docker compose build
 docker compose run --rm repo-metrics --repos /data/repos.txt --out run1 --pct 5
 ```
@@ -69,11 +69,37 @@ path/to/repos.txt --out run1 --pct 5` from any cwd.
 
 Tokens (`GH_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_TOKEN` /
 `BITBUCKET_ACCOUNT_SCOPED_TOKEN`) as environment variables, or a `.env`
-file dropped next to `datalabs_paths.py`. Not needed for public repos or
-local paths.
+file dropped next to `datalabs_paths.py` (`cp .env.example .env`). Not
+needed for public repos or local paths — see Tokens below.
 
 Output lands in `repo_metrics_docker_package/outputs/repo-metrics/run1/` —
 self-contained, same as Docker's bind-mounted output directory.
+
+## Tokens (private / hosted repos)
+
+`.env.example` at the package root lists every token this package
+recognizes. For a regular run — public GitHub/GitLab/Bitbucket repos, or
+local paths in `repos.txt` — just:
+
+```bash
+cp .env.example .env
+```
+
+and leave it untouched; no token is needed, `git clone` just runs
+unauthenticated.
+
+Only add a token if a repo in your list is **private**. Open `.env` and
+fill in the line for that platform, leaving the others blank:
+
+| Platform | Env var in `.env` | Token scope needed |
+|---|---|---|
+| GitHub | `GH_TOKEN` | `repo` (read) |
+| GitLab | `GITLAB_TOKEN` | `read_repository` |
+| Bitbucket | `BITBUCKET_TOKEN` | repository read |
+
+Same `.env` file for both Option A (Docker) and Option B (plain Python) —
+environment variables work too (`GH_TOKEN=... docker compose run ...`) if
+you'd rather not put a token on disk at all.
 
 ## Fallback ladder (both run modes — this doesn't change based on Docker vs. Python)
 
