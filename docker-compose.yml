@@ -10,9 +10,9 @@
 # Before first run:
 #   - drop repos.txt next to this file (one repo per line — owner/repo, a
 #     full URL, or a local path; see skills/repo-metrics/docker/README.md)
-#   - `touch .env` if you have no tokens to add. Compose errors if an
-#     env_file: target doesn't exist at all, even for public-repo runs where
-#     no token is needed — an empty file satisfies it.
+#   - `cp .env.example .env` — leave it as-is for public repos; compose errors
+#     if an env_file: target doesn't exist at all, even when no token is
+#     needed, so the file must exist regardless.
 #     Otherwise put GH_TOKEN / GITLAB_TOKEN / BITBUCKET_TOKEN / etc. in it —
 #     same file plain Python (Option B) and raw `docker run` already use.
 #
@@ -40,7 +40,7 @@ services:
       - ./run-output:/app/outputs/repo-metrics
       # Every local repo checkout lives as a sibling folder of datalabs_paths.py
       # (this package's root) — mount that whole root read-only, then reference
-      # each repo in repos.txt by its bare folder name (e.g. "mim-hr"), exactly
+      # each repo in repos.txt by its bare folder name (e.g. "example-app"), exactly
       # like Option B (plain Python). This image's WORKDIR is /data/checkouts,
       # so a bare relative entry resolves there automatically — do NOT prefix
       # it with /data/checkouts/, since that path only exists inside the

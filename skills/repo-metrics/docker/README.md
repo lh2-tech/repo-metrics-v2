@@ -7,22 +7,22 @@ is reimplemented for the container).
 
 ## Build
 
-Build context must be the **DataLabs root**, not this `docker/` directory —
+Build context must be **this repo's root**, not this `docker/` directory —
 the Dockerfile needs `datalabs_paths.py` and `skills/repo-metrics/scripts/`:
 
 ```bash
-cd /path/to/DataLabs
+cd /path/to/this-repo
 docker build -f skills/repo-metrics/docker/Dockerfile -t repo-metrics-sample .
 ```
 
 ## Quickest: docker compose
 
-`docker-compose.yml` at the DataLabs root wires up the three bind mounts
+`docker-compose.yml` at this repo's root wires up the three bind mounts
 below for you, so `build` + `run` collapse to:
 
 ```bash
-cd /path/to/DataLabs
-touch .env    # tokens optional for public repos; file just needs to exist
+cd /path/to/this-repo
+cp .env.example .env    # regular runs: leave it as-is; see main README's Tokens section for private repos
 docker compose build
 docker compose run --rm repo-metrics --repos /data/repos.txt --out run1 --pct 5
 ```

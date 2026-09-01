@@ -17,3 +17,4 @@ node_modules/
 *.pre-migration.bak
 *.pre-normalize.bak
 .secrets-archive/
+.claude/

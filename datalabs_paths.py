@@ -145,7 +145,7 @@ def clones_gitlab() -> Path:
 
 
 def clones_batch(name: str) -> Path:
-    """Org/batch-specific working clones (e.g. lh2-share, tactconnect)."""
+    """Org/batch-specific working clones (e.g. per-engagement batches)."""
     return CLONES_ROOT / "batches" / name
 
 

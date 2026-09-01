@@ -5,7 +5,7 @@ commit-history sample, for every repo in a list. Two ways to run it —
 containerized or plain Python — both use the exact same script.
 
 ```
-repo_metrics_docker_package/
+. (this repo's root)
 ├── datalabs_paths.py
 ├── .dockerignore
 └── skills/repo-metrics/
@@ -33,7 +33,7 @@ three bind mounts (repo list, tokens, output dir) so you don't retype them
 per run.
 
 ```bash
-cd repo_metrics_docker_package
+# from this repo's root
 cp .env.example .env     # regular runs: leave it as-is, see Tokens below for private repos
 docker compose build
 docker compose run --rm repo-metrics --repos /data/repos.txt --out run1 --pct 5
@@ -55,14 +55,14 @@ automatically to a weaker built-in detector if absent). No pip packages
 needed; the scripts are stdlib-only.
 
 ```bash
-cd repo_metrics_docker_package
+# from this repo's root
 python3 skills/repo-metrics/scripts/run_metrics_and_sample.py \
     --repos repos.txt --out run1 --pct 5
 ```
 
 Run this from the package root (not from inside `scripts/`) — `repos.txt`
 lives here, and any bare local-folder entries in it (e.g. a repo checked
-out as a sibling folder, just `mim-hr` rather than a path) are resolved
+out as a sibling folder, just `example-app` rather than a path) are resolved
 relative to wherever `repos.txt` itself lives, so this also works fine as
 `python3 skills/repo-metrics/scripts/run_metrics_and_sample.py --repos
 path/to/repos.txt --out run1 --pct 5` from any cwd.
@@ -72,8 +72,8 @@ Tokens (`GH_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_TOKEN` /
 file dropped next to `datalabs_paths.py` (`cp .env.example .env`). Not
 needed for public repos or local paths — see Tokens below.
 
-Output lands in `repo_metrics_docker_package/outputs/repo-metrics/run1/` —
-self-contained, same as Docker's bind-mounted output directory.
+Output lands in `outputs/repo-metrics/run1/` (relative to this repo's root)
+— self-contained, same as Docker's bind-mounted output directory.
 
 ## Tokens (private / hosted repos)
 
